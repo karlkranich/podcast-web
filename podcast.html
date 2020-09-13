@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="assets/styles-podcast.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="assets/auth.js"></script>
+    <script>
+      // Clear the message box when the page loads
+      $(function () {
+        $("#messages").empty();
+      });
+
+      // Function to submit episode info and podcast file
+      function submitToAPI(e) {
+        e.preventDefault();
+
+        // Get form field values
+        var filename = $("#file-input").val();
+        var episodeNum = $("#episode-num-input").val();
+        var pubDate = $("#pub-date-input").val();
+        var description = $("#description-input").val();
+
+        // Make sure pubDate is formatted correctly
+        var pubDateRE = /[0-9]{4}-[0-9]{2}-[0-9]{2}/;
+        if (!pubDateRE.test(pubDate)) {
+          alert("Please enter a date of the form yyyy-mm-dd");
+          return;
+        }
+
+        // Make sure a file has been chosen
+        // (doesn't get submitted with the initial PUT; is used in the following S3 POST)
+        if (filename == "") {
+          alert("Please choose a file to upload");
+          return;
+        }
+
+        // Build an object to send the form field data to API Gateway
+        var formData = {
+          "episode-num": episodeNum,
+          "pub-date": pubDate,
+          description: encodeURIComponent(description),
+          password: $("#password-input").val(),
+        };
+
+        // apiKey and apiUrl are defined in auth.js
+        $.ajax({
+          type: "PUT",
+          url: apiUrl,
+          headers: { "x-api-key": apiKey },
+          dataType: "json",
+          crossDomain: "true",
+          contentType: "application/json; charset=utf-8",
+          data: JSON.stringify(formData),
+          success: function (response) {
+            // We got an upload URL with field data to authenticate it
+            $("#messages").append("Episode info submitted<br>");
+
+            // Now we upload the file with the presigned url
+            // Build the FormData object for the POST
+            console.log(response.url);
+            const formData = new FormData();
+            Object.keys(response.fields).forEach((key) => {
+              formData.append(key, response.fields[key]);
+            });
+            // File has to be appended last.
+            var file = $("#file-input")[0].files[0];
+            formData.append("file", file);
+            console.log(formData);
+
+            // Do the upload
+            $("#messages").append("Uploading mp3 file...<br>");
+            $.ajax(response.url, {
+              type: "POST",
+              processData: false,
+              contentType: false,
+              data: formData,
+              success: function (response) {
+                $("#messages").append("Podcast file uploaded<br>");
+              },
+            });
+          },
+          error: function () {
+            // The PUT of episode data or presigned URL generation failed
+            $("#messages").append("Unable to submit episode info<br>");
+          },
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div id="container-main">
+      <h1>CCC Podcast - Add Episode</h1>
+      <div id="container-podcastform">
+        <form id="podcast-form" method="post">
+          <p>Audio File to Upload:</p>
+          <input type="file" id="file-input" class="form-control" />
+          <br />
+          <p>Episode Number:</p>
+          <input
+            type="text"
+            id="episode-num-input"
+            class="form-control"
+          /><br />
+          <p>Publish Date:</p>
+          <input
+            type="text"
+            id="pub-date-input"
+            placeholder="ex: 2020-07-21"
+            class="form-control"
+          /><br />
+          <p>Description:</p>
+          <textarea
+            id="description-input"
+            rows="4"
+            class="form-control"
+          ></textarea
+          ><br />
+          <p>Password:</p>
+          <input
+            type="password"
+            id="password-input"
+            class="form-control"
+          /><br />
+          <button type="button" onClick="submitToAPI(event)" class="btn-gray">
+            Submit
+          </button>
+        </form>
+      </div>
+      <div id="container-status">
+        <h3>Status:</h3>
+        <div id="messages"></div>
+      </div>
+    </div>
+  </body>
+</html>
