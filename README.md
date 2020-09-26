@@ -8,3 +8,7 @@ apiUrl = "https://apiurlfromamazon.execute-api.us-east-1.amazonaws.com/prod/add-
 ```
 
 For more info, see [Karl's Podcast Hosting Project](https://karl.kranich.org/2020/09/25/serverless-podcast/)
+
+### Related projects:
+- [Lambda podcast episode poster](https://github.com/karlkranich/lambda-podcast-poster)
+- [Lambda RSS builder](https://github.com/karlkranich/lambda-rss-builder)
