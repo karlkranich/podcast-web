@@ -12,7 +12,7 @@
         $("#messages").empty();
       });
 
-      // Function to submit episode info and podcast file
+      // Function to submit episode info and the podcast episode media file
       function submitToAPI(e) {
         e.preventDefault();
 
@@ -22,7 +22,7 @@
         var pubDate = $("#pub-date-input").val();
         var description = $("#description-input").val();
 
-        // Make sure pubDate is formatted correctly
+        // Make sure pubDate is formatted correctly (ex: 2020-05-23)
         var pubDateRE = /[0-9]{4}-[0-9]{2}-[0-9]{2}/;
         if (!pubDateRE.test(pubDate)) {
           alert("Please enter a date of the form yyyy-mm-dd");
