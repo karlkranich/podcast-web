@@ -3,7 +3,7 @@ Web form and javascript that adds episodes to podcast feed using AWS API Gateway
 Requires an auth.js file that looks like:
 
 ```javascript
-apiKey = "thisistheapikeyforauthenticatingtoapigateway"
+apiKey = "thisistheapikeyforauthenticatingtoapigateway";
 apiUrl = "https://apiurlfromamazon.execute-api.us-east-1.amazonaws.com/prod/add-episode";
 ```
 
